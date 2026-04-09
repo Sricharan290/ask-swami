@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ask Swami</title>
+  <meta name="description" content="Seek the blessings of Sri Sathya Sai Baba. An adaptation of the Answers From Swamy booklet." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕉️</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { background: #fff; font-family: 'Playfair Display', Georgia, serif; -webkit-font-smoothing: antialiased; }
+    #root { min-height: 100vh; }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { opacity: 1; }
+    input[type=number] { -moz-appearance: textfield; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(194,24,91,0.2); border-radius: 3px; }
+    #loading {
+      position: fixed; inset: 0;
+      background: linear-gradient(160deg, #fff5f8 0%, #fff0ea 100%);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 1rem; z-index: 9999; transition: opacity 0.8s ease;
+    }
+    #loading.fade { opacity: 0; pointer-events: none; }
+    #loading-om { font-size: 3rem; animation: glow 1.5s ease-in-out infinite alternate; }
+    #loading-text { color: #c2185b; font-style: italic; font-size: 0.9rem; }
+    @keyframes glow { from { opacity:0.6; transform:scale(1); } to { opacity:1; transform:scale(1.1); } }
+    @keyframes pulse { from { transform:scale(1); opacity:0.8; } to { transform:scale(1.3); opacity:1; } }
+    @keyframes unfold { from { transform:scaleY(0.05) scaleX(0.6); opacity:0; } to { transform:scaleY(1) scaleX(1); opacity:1; } }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <div id="loading-om">🕉️</div>
+    <div id="loading-text">Entering the Sanctuary...</div>
+  </div>
+  <div id="root"></div>
+
+  <script type="text/babel" data-type="module">
+    const { useState, useEffect } = React;
+    const MAX_DAILY = 3;
+    const STORAGE_KEY = "askSwami_v1";
+
+    function getTodayStr() { return new Date().toISOString().slice(0, 10); }
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return { date: getTodayStr(), count: 0, history: [] };
+        const s = JSON.parse(raw);
+        if (s.date !== getTodayStr()) return { date: getTodayStr(), count: 0, history: [] };
+        return s;
+      } catch { return { date: getTodayStr(), count: 0, history: [] }; }
+    }
+    function saveState(s) { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+
+    // ── Chit Reveal ──────────────────────────────────────────────────────────
+    function ChitReveal({ quote, onClose }) {
+      const [phase, setPhase] = useState("glow");
+      const [imgFailed, setImgFailed] = useState(false);
+      useEffect(() => {
+        const t1 = setTimeout(() => setPhase("unfold"), 800);
+        const t2 = setTimeout(() => setPhase("show"), 2000);
+        return () => { clearTimeout(t1); clearTimeout(t2); };
+      }, []);
+      return (
+        <div style={{
+          position:"fixed", inset:0, zIndex:100,
+          background:"rgba(60,0,20,0.85)",
+          display:"flex", alignItems:"center", justifyContent:"center", padding:"2rem",
+        }}>
+          {phase === "glow" && (
+            <div style={{
+              width:80, height:80, borderRadius:"50%",
+              background:"radial-gradient(circle, #FFD54F 0%, #ff8f00 40%, transparent 70%)",
+              animation:"pulse 0.8s ease-in-out infinite alternate",
+            }} />
+          )}
+          {phase !== "glow" && (
+            <div style={{
+              background:"linear-gradient(145deg, #fff8e1, #fff3e0)",
+              borderRadius:16, border:"2px solid #FFD54F",
+              boxShadow:"0 0 40px rgba(255,213,79,0.4), 0 8px 40px rgba(0,0,0,0.2)",
+              padding:"2rem", maxWidth:360, width:"100%",
+              animation: phase==="unfold" ? "unfold 1.2s cubic-bezier(0.34,1.56,0.64,1) forwards" : "none",
+              textAlign:"center",
+            }}>
+              {!imgFailed && (
+                <div style={{ marginBottom:"1.2rem" }}>
+                  <img src={`images/${quote.image}`} alt="Swami"
+                    onError={() => setImgFailed(true)}
+                    style={{ width:140, height:140, objectFit:"cover", borderRadius:"50%", border:"3px solid #FFD54F", boxShadow:"0 0 24px rgba(255,213,79,0.4)" }}
+                  />
+                </div>
+              )}
+              <div style={{ fontSize:26, marginBottom:8, color:"#c2185b" }}>ॐ</div>
+              <p style={{ fontSize:"1.05rem", fontFamily:"'Playfair Display', Georgia, serif", color:"#4a0e2c", lineHeight:1.8, fontStyle:"italic", margin:"0 0 1rem" }}>
+                "{quote.quote}"
+              </p>
+              <p style={{ fontSize:"0.78rem", color:"#b06090", marginBottom:"1.5rem" }}>
+                — Sri Sathya Sai Baba &nbsp;·&nbsp; Chit #{quote.id}
+              </p>
+              <button onClick={onClose} style={{
+                background:"linear-gradient(135deg, #c2185b, #e91e8c)",
+                color:"#fff", border:"none", borderRadius:50,
+                padding:"0.7rem 2.2rem", fontSize:"0.95rem",
+                cursor:"pointer", letterSpacing:"0.06em",
+                fontFamily:"'Playfair Display', serif",
+              }}>🙏 &nbsp; Sai Ram</button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ── Lotus ────────────────────────────────────────────────────────────────
+    function Lotus({ size=48, opacity=0.5 }) {
+      return (
+        <svg width={size} height={size} viewBox="0 0 48 48" style={{ opacity }} aria-hidden="true">
+          {[0,45,90,135,180,225,270,315].map((deg,i) => (
+            <ellipse key={i} cx="24" cy="24" rx="7" ry="16"
+              transform={`rotate(${deg} 24 24)`} fill="none" stroke="#c2185b" strokeWidth="0.8" />
+          ))}
+          <circle cx="24" cy="24" r="5" fill="#c2185b" opacity="0.4" />
+        </svg>
+      );
+    }
+
+    // ── Main Chit Picker ─────────────────────────────────────────────────────
+    function ChitPicker({ state, quotes, onAsk }) {
+      const [mode, setMode] = useState("swami");
+      const [chosenNum, setChosenNum] = useState(0);
+      const attemptsLeft = MAX_DAILY - state.count;
+      return (
+        <div style={{ minHeight:"100vh", background:"linear-gradient(180deg, #fff 0%, #fff5f8 60%, #ffe4ef 100%)" }}>
+
+          {/* Samadhi photo */}
+          <div style={{ width:"100%", height:260, overflow:"hidden", position:"relative" }}>
+            <img src="samadhi.png" alt="Prasanthi Nilayam Samadhi"
+              style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%" }} />
+            <div style={{
+              position:"absolute", inset:0,
+              background:"linear-gradient(to bottom, transparent 50%, rgba(255,245,248,0.85) 85%, #fff5f8 100%)",
+            }} />
+            {/* Title overlay */}
+            <div style={{ position:"absolute", bottom:"1.5rem", left:0, right:0, textAlign:"center" }}>
+              <h1 style={{
+                fontSize:"2rem", fontWeight:700,
+                background:"linear-gradient(135deg, #e65100, #c2185b)",
+                WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
+                textShadow:"none", display:"inline-block",
+              }}>Ask Swami</h1>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div style={{ maxWidth:500, margin:"0 auto", padding:"1rem 1.5rem 3rem", textAlign:"center" }}>
+            <Lotus size={36} opacity={0.45} />
+            <h2 style={{ fontSize:"1.4rem", fontWeight:700, color:"#c2185b", margin:"0.6rem 0 0.4rem" }}>
+              Seek Swami's Blessings
+            </h2>
+            <p style={{ color:"#8d3a50", fontSize:"0.88rem", fontStyle:"italic", lineHeight:1.9, marginBottom:"1.8rem" }}>
+              Close your eyes. Think of Swami.<br />
+              Hold your situation gently in your heart.<br />
+              Then ask.
+            </p>
+
+            {/* Mode toggle */}
+            <div style={{
+              display:"flex", background:"rgba(194,24,91,0.06)",
+              border:"1px solid rgba(194,24,91,0.2)",
+              borderRadius:50, padding:4, maxWidth:320, margin:"0 auto 1.8rem",
+            }}>
+              {["swami","choose"].map(m => (
+                <button key={m} onClick={() => setMode(m)} style={{
+                  flex:1, padding:"0.55rem 1rem", borderRadius:50, border:"none",
+                  background: mode===m ? "linear-gradient(135deg,#c2185b,#e91e8c)" : "transparent",
+                  color: mode===m ? "#fff" : "#c2185b",
+                  cursor:"pointer", fontSize:"0.85rem", transition:"all 0.3s",
+                  fontFamily:"'Playfair Display', serif",
+                }}>
+                  {m==="swami" ? "🙏 Let Swami Decide" : "🔢 Choose a Number"}
+                </button>
+              ))}
+            </div>
+
+            {/* Number input */}
+            {mode === "choose" && (
+              <div style={{ marginBottom:"1.5rem" }}>
+                <p style={{ color:"#8d3a50", fontSize:"0.88rem", fontStyle:"italic", marginBottom:"1rem", lineHeight:1.7 }}>
+                  Close your eyes. Let a number arise in your heart.<br />Then enter it below.
+                </p>
+                <input type="number" min="1" max="108"
+                  value={chosenNum === 0 ? "" : chosenNum}
+                  onChange={e => {
+                    const v = parseInt(e.target.value);
+                    if (!e.target.value) { setChosenNum(0); return; }
+                    if (v >= 1 && v <= 108) setChosenNum(v);
+                  }}
+                  placeholder="1 – 108"
+                  style={{
+                    background:"#fff", border:"1.5px solid rgba(194,24,91,0.35)",
+                    borderRadius:12, color:"#c2185b", fontSize:"2rem",
+                    fontFamily:"'Playfair Display', serif",
+                    textAlign:"center", width:130, padding:"0.6rem 0.5rem",
+                    outline:"none", boxShadow:"0 2px 12px rgba(194,24,91,0.1)",
+                  }}
+                />
+                {chosenNum > 0 && (
+                  <p style={{ color:"rgba(194,24,91,0.5)", fontSize:"0.75rem", marginTop:"0.6rem" }}>Chit #{chosenNum} selected</p>
+                )}
+              </div>
+            )}
+
+            {/* Ask / Sorry */}
+            {attemptsLeft > 0 ? (
+              <button
+                onClick={() => onAsk(mode==="swami" ? null : chosenNum, quotes)}
+                disabled={mode==="choose" && chosenNum===0}
+                style={{
+                  background: (mode==="choose" && chosenNum===0) ? "rgba(194,24,91,0.1)" : "linear-gradient(135deg,#c2185b,#e91e8c)",
+                  border:"none", borderRadius:50, padding:"1rem 3rem", fontSize:"1.05rem",
+                  color: (mode==="choose" && chosenNum===0) ? "#c2185b" : "#fff",
+                  cursor: (mode==="choose" && chosenNum===0) ? "not-allowed" : "pointer",
+                  fontFamily:"'Playfair Display', serif", letterSpacing:"0.06em",
+                  boxShadow: (mode==="choose" && chosenNum===0) ? "none" : "0 4px 24px rgba(194,24,91,0.3)",
+                  transition:"all 0.3s", marginBottom:"1.5rem",
+                }}>
+                🌸 Ask Swami
+              </button>
+            ) : (
+              <div style={{
+                background:"#fff", border:"1px solid rgba(194,24,91,0.2)",
+                borderRadius:16, padding:"1.5rem", marginBottom:"1.5rem",
+                boxShadow:"0 2px 16px rgba(194,24,91,0.08)",
+              }}>
+                <div style={{ fontSize:"2rem", marginBottom:"0.5rem" }}>🙏</div>
+                <p style={{ fontFamily:"'Playfair Display',Georgia,serif", color:"#c2185b", fontSize:"1rem", fontStyle:"italic", lineHeight:1.8 }}>
+                  "Swami has blessed you enough for today.<br />Return tomorrow with a fresh heart."
+                </p>
+                <p style={{ color:"#b06090", fontSize:"0.8rem", marginTop:"0.8rem" }}>You have received all 3 blessings for today</p>
+              </div>
+            )}
+
+            {/* Dots */}
+            <div style={{ display:"flex", gap:8, justifyContent:"center", marginBottom:"0.5rem" }}>
+              {[1,2,3].map(i => (
+                <div key={i} style={{
+                  width:10, height:10, borderRadius:"50%",
+                  background: i<=state.count ? "linear-gradient(135deg,#c2185b,#e91e8c)" : "rgba(194,24,91,0.12)",
+                  border:"1px solid rgba(194,24,91,0.25)", transition:"all 0.4s",
+                }} />
+              ))}
+            </div>
+            <p style={{ color:"rgba(141,58,80,0.5)", fontSize:"0.75rem", marginBottom:"2rem" }}>
+              {attemptsLeft > 0 ? `${attemptsLeft} blessing${attemptsLeft>1?"s":""} remaining today` : "Blessings reset at midnight"}
+            </p>
+
+            {/* History */}
+            {state.history.length > 0 && (
+              <div style={{ textAlign:"left" }}>
+                <p style={{ color:"rgba(141,58,80,0.45)", fontSize:"0.72rem", marginBottom:"0.8rem", textTransform:"uppercase", letterSpacing:"0.1em" }}>
+                  Today's Answers
+                </p>
+                {state.history.map((h,i) => (
+                  <div key={i} style={{
+                    background:"#fff", border:"1px solid rgba(194,24,91,0.12)",
+                    borderRadius:10, padding:"0.8rem 1rem", marginBottom:"0.5rem",
+                    boxShadow:"0 1px 6px rgba(194,24,91,0.05)",
+                  }}>
+                    <span style={{ color:"#e65100", fontSize:"0.72rem" }}>#{h.id} &nbsp;</span>
+                    <span style={{ color:"#8d3a50", fontSize:"0.82rem", fontStyle:"italic" }}>
+                      "{h.quote.length>80 ? h.quote.slice(0,77)+"…" : h.quote}"
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ── Root ─────────────────────────────────────────────────────────────────
+    function AskSwami() {
+      const [state, setState] = useState(loadState);
+      const [reveal, setReveal] = useState(null);
+      const [screen, setScreen] = useState("landing");
+      const [quotes, setQuotes] = useState([]);
+
+      useEffect(() => {
+        fetch("quotes.json")
+          .then(r => r.json())
+          .then(data => {
+            setQuotes(data);
+            const el = document.getElementById("loading");
+            if (el) { el.classList.add("fade"); setTimeout(() => el.remove(), 900); }
+          })
+          .catch(() => {
+            const el = document.getElementById("loading");
+            if (el) { el.classList.add("fade"); setTimeout(() => el.remove(), 900); }
+          });
+      }, []);
+
+      function handleAsk(num, quotes) {
+        if (state.count >= MAX_DAILY || !quotes.length) return;
+        const id = num || Math.floor(Math.random() * 108) + 1;
+        const quote = quotes.find(q => q.id === id) || quotes[id-1];
+        const newState = { date:getTodayStr(), count:state.count+1, history:[quote,...state.history].slice(0,3) };
+        setState(newState); saveState(newState); setReveal(quote);
+      }
+
+      return (
+        <div style={{ minHeight:"100vh", fontFamily:"'Playfair Display', Georgia, serif" }}>
+
+          {/* Landing */}
+          {screen === "landing" && (
+            <div style={{ minHeight:"100vh", background:"linear-gradient(180deg,#fff 0%,#fff5f8 60%,#ffe4ef 100%)" }}>
+              <div style={{ position:"relative", width:"100%", height:"62vh", minHeight:300, overflow:"hidden" }}>
+                <img src="prasanthi.jpeg" alt="Prasanthi Nilayam, Puttaparthi"
+                  style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 40%" }} />
+                <div style={{
+                  position:"absolute", inset:0,
+                  background:"linear-gradient(to bottom, transparent 45%, rgba(255,245,248,0.7) 80%, #fff5f8 100%)",
+                }} />
+                <div style={{ position:"absolute", top:"1.2rem", left:0, right:0, textAlign:"center" }}>
+                  <p style={{
+                    display:"inline-block", background:"rgba(255,255,255,0.8)",
+                    backdropFilter:"blur(8px)", borderRadius:50, padding:"0.35rem 1.2rem",
+                    color:"#c2185b", fontSize:"0.72rem", letterSpacing:"0.2em",
+                    fontFamily:"sans-serif", fontWeight:600,
+                  }}>✦ &nbsp; PRASANTHI NILAYAM &nbsp;·&nbsp; PUTTAPARTHI, AP &nbsp; ✦</p>
+                </div>
+              </div>
+
+              <div style={{ textAlign:"center", padding:"0 1.5rem 3rem", maxWidth:500, margin:"0 auto" }}>
+                <h1 style={{
+                  fontSize:"clamp(2.4rem,7vw,3.8rem)", fontWeight:700, lineHeight:1.1,
+                  background:"linear-gradient(135deg,#e65100,#c2185b)",
+                  WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
+                  marginBottom:"0.6rem", marginTop:"0.5rem",
+                }}>Ask Swami</h1>
+                <p style={{ color:"#c2185b", fontSize:"0.95rem", fontStyle:"italic", lineHeight:1.9, marginBottom:"0.4rem" }}>
+                  "I am above you, below you, beside you,<br />around you, in you"
+                </p>
+                <p style={{ color:"#e65100", fontSize:"0.78rem", letterSpacing:"0.08em", marginBottom:"1.8rem", opacity:0.7 }}>
+                  — Sri Sathya Sai Baba
+                </p>
+                <p style={{ color:"#8d3a50", lineHeight:1.9, fontSize:"0.9rem", marginBottom:"2rem" }}>
+                  An adaptation of the sacred <em>"Answers from Swamy"</em> booklet
+                  from Sri Sathya Sai Baba Ashrams. Think of Swami, hold your
+                  situation in your heart, and let Him answer through the chit.
+                </p>
+                <div style={{ display:"flex", gap:"0.7rem", justifyContent:"center", flexWrap:"wrap", marginBottom:"2rem" }}>
+                  {[["🌸","108 Answers"],["🙏","3 Daily"],["✨","Swami Decides"]].map(([icon,label]) => (
+                    <div key={label} style={{
+                      background:"rgba(194,24,91,0.06)", border:"1px solid rgba(194,24,91,0.18)",
+                      borderRadius:50, padding:"0.4rem 1rem",
+                      display:"flex", alignItems:"center", gap:"0.4rem",
+                    }}>
+                      <span style={{ fontSize:"0.9rem" }}>{icon}</span>
+                      <span style={{ color:"#c2185b", fontSize:"0.78rem", fontFamily:"sans-serif" }}>{label}</span>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => setScreen("main")} style={{
+                  background:"linear-gradient(135deg,#e65100,#c2185b)",
+                  border:"none", borderRadius:50, padding:"0.95rem 3rem",
+                  fontSize:"1rem", color:"#fff", cursor:"pointer",
+                  letterSpacing:"0.06em", boxShadow:"0 4px 24px rgba(194,24,91,0.25)",
+                  fontFamily:"'Playfair Display', serif", marginBottom:"2rem",
+                }}>🌸 &nbsp; Enter the Sanctuary</button>
+                <p style={{ color:"rgba(141,58,80,0.4)", fontSize:"0.72rem", lineHeight:1.8 }}>
+                  Only for those who believe in the divine form of<br />Sri Sathya Sai Baba and seek His blessings.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Main */}
+          {screen === "main" && (
+            <div>
+              <div style={{ padding:"1rem 1.5rem 0" }}>
+                <button onClick={() => setScreen("landing")} style={{
+                  background:"none", border:"none", color:"#c2185b",
+                  cursor:"pointer", fontSize:"0.85rem", fontFamily:"'Playfair Display', serif",
+                }}>← Back</button>
+              </div>
+              <ChitPicker state={state} quotes={quotes} onAsk={handleAsk} />
+            </div>
+          )}
+
+          {reveal && <ChitReveal quote={reveal} onClose={() => setReveal(null)} />}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<AskSwami />);
+  </script>
+</body>
+</html>
