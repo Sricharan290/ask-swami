@@ -42,7 +42,7 @@
 <body>
   <div id="loading">
     <div id="loading-om">🕉️</div>
-    <div id="loading-text">Entering the Sanctuary...</div>
+    <div id="loading-text">Entering the Abode of Peace</div>
   </div>
   <div id="root"></div>
 
@@ -88,26 +88,26 @@
           {phase !== "glow" && (
             <div style={{
               background:"linear-gradient(145deg, #fff8e1, #fff3e0)",
-              borderRadius:16, border:"2px solid #FFD54F",
+              borderRadius:20, border:"2px solid #FFD54F",
               boxShadow:"0 0 40px rgba(255,213,79,0.4), 0 8px 40px rgba(0,0,0,0.2)",
-              padding:"2rem", maxWidth:360, width:"100%",
+              padding:"2rem", maxWidth:440, width:"100%",
               animation: phase==="unfold" ? "unfold 1.2s cubic-bezier(0.34,1.56,0.64,1) forwards" : "none",
               textAlign:"center",
             }}>
               {!imgFailed && (
-                <div style={{ marginBottom:"1.2rem" }}>
+                <div style={{ marginBottom:"1.4rem" }}>
                   <img src={`images/${quote.image}`} alt="Swami"
                     onError={() => setImgFailed(true)}
-                    style={{ width:140, height:140, objectFit:"cover", borderRadius:"50%", border:"3px solid #FFD54F", boxShadow:"0 0 24px rgba(255,213,79,0.4)" }}
+                    style={{ width:"100%", maxHeight:220, objectFit:"cover", borderRadius:12, border:"3px solid #FFD54F", boxShadow:"0 0 24px rgba(255,213,79,0.4)" }}
                   />
                 </div>
               )}
-              <div style={{ fontSize:26, marginBottom:8, color:"#c2185b" }}>ॐ</div>
-              <p style={{ fontSize:"1.05rem", fontFamily:"'Playfair Display', Georgia, serif", color:"#4a0e2c", lineHeight:1.8, fontStyle:"italic", margin:"0 0 1rem" }}>
+              <div style={{ fontSize:30, marginBottom:10, color:"#c2185b" }}>ॐ</div>
+              <p style={{ fontSize:"1.2rem", fontFamily:"'Playfair Display', Georgia, serif", color:"#4a0e2c", lineHeight:1.9, fontStyle:"italic", margin:"0 0 1.2rem" }}>
                 "{quote.quote}"
               </p>
-              <p style={{ fontSize:"0.78rem", color:"#b06090", marginBottom:"1.5rem" }}>
-                — Sri Sathya Sai Baba &nbsp;·&nbsp; Chit #{quote.id}
+              <p style={{ fontSize:"0.88rem", color:"#b06090", marginBottom:"1.5rem" }}>
+                — Swami's message&nbsp; {quote.id}
               </p>
               <button onClick={onClose} style={{
                 background:"linear-gradient(135deg, #c2185b, #e91e8c)",
@@ -144,12 +144,12 @@
         <div style={{ minHeight:"100vh", background:"linear-gradient(180deg, #fff 0%, #fff5f8 60%, #ffe4ef 100%)" }}>
 
           {/* Samadhi photo */}
-          <div style={{ width:"100%", height:260, overflow:"hidden", position:"relative" }}>
+          <div style={{ width:"100%", height:320, overflow:"hidden", position:"relative" }}>
             <img src="samadhi.png" alt="Prasanthi Nilayam Samadhi"
-              style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%" }} />
+              style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 30%" }} />
             <div style={{
               position:"absolute", inset:0,
-              background:"linear-gradient(to bottom, transparent 50%, rgba(255,245,248,0.85) 85%, #fff5f8 100%)",
+              background:"linear-gradient(to bottom, transparent 65%, rgba(255,245,248,0.5) 90%, #fff5f8 100%)",
             }} />
             {/* Title overlay */}
             <div style={{ position:"absolute", bottom:"1.5rem", left:0, right:0, textAlign:"center" }}>
@@ -235,7 +235,7 @@
                   boxShadow: (mode==="choose" && chosenNum===0) ? "none" : "0 4px 24px rgba(194,24,91,0.3)",
                   transition:"all 0.3s", marginBottom:"1.5rem",
                 }}>
-                🌸 Ask Swami
+                🌸 Ask Swami 🌸
               </button>
             ) : (
               <div style={{
@@ -245,9 +245,9 @@
               }}>
                 <div style={{ fontSize:"2rem", marginBottom:"0.5rem" }}>🙏</div>
                 <p style={{ fontFamily:"'Playfair Display',Georgia,serif", color:"#c2185b", fontSize:"1rem", fontStyle:"italic", lineHeight:1.8 }}>
-                  "Swami has blessed you enough for today.<br />Return tomorrow with a fresh heart."
+                  "You have reached your maximum limit for today.<br />Return tomorrow with a fresh heart."
                 </p>
-                <p style={{ color:"#b06090", fontSize:"0.8rem", marginTop:"0.8rem" }}>You have received all 3 blessings for today</p>
+                <p style={{ color:"#b06090", fontSize:"0.8rem", marginTop:"0.8rem" }}>You have reached you maximum limit for today.</p>
               </div>
             )}
 
@@ -325,12 +325,12 @@
           {/* Landing */}
           {screen === "landing" && (
             <div style={{ minHeight:"100vh", background:"linear-gradient(180deg,#fff 0%,#fff5f8 60%,#ffe4ef 100%)" }}>
-              <div style={{ position:"relative", width:"100%", height:"62vh", minHeight:300, overflow:"hidden" }}>
+              <div style={{ position:"relative", width:"100%", height:"70vh", minHeight:340, overflow:"hidden" }}>
                 <img src="prasanthi.jpeg" alt="Prasanthi Nilayam, Puttaparthi"
-                  style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 40%" }} />
+                  style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 50%" }} />
                 <div style={{
                   position:"absolute", inset:0,
-                  background:"linear-gradient(to bottom, transparent 45%, rgba(255,245,248,0.7) 80%, #fff5f8 100%)",
+                  background:"linear-gradient(to bottom, transparent 60%, rgba(255,245,248,0.4) 88%, #fff5f8 100%)",
                 }} />
                 <div style={{ position:"absolute", top:"1.2rem", left:0, right:0, textAlign:"center" }}>
                   <p style={{
@@ -338,7 +338,7 @@
                     backdropFilter:"blur(8px)", borderRadius:50, padding:"0.35rem 1.2rem",
                     color:"#c2185b", fontSize:"0.72rem", letterSpacing:"0.2em",
                     fontFamily:"sans-serif", fontWeight:600,
-                  }}>✦ &nbsp; PRASANTHI NILAYAM &nbsp;·&nbsp; PUTTAPARTHI, AP &nbsp; ✦</p>
+                  }}>✦ &nbsp; PRASANTHI NILAYAM &nbsp; ✦</p>
                 </div>
               </div>
 
@@ -378,9 +378,9 @@
                   fontSize:"1rem", color:"#fff", cursor:"pointer",
                   letterSpacing:"0.06em", boxShadow:"0 4px 24px rgba(194,24,91,0.25)",
                   fontFamily:"'Playfair Display', serif", marginBottom:"2rem",
-                }}>🌸 &nbsp; Enter the Sanctuary</button>
+                }}>🌸 &nbsp; Enter the Abode of Peace</button>
                 <p style={{ color:"rgba(141,58,80,0.4)", fontSize:"0.72rem", lineHeight:1.8 }}>
-                  Only for those who believe in the divine form of<br />Sri Sathya Sai Baba and seek His blessings.
+                  Just surrender to<br />Sri Sathya Sai Baba and seek HIS blessings.
                 </p>
               </div>
             </div>
